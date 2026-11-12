@@ -38,9 +38,16 @@ async function authenticated(req,env){if(!env.SESSION_SECRET)return false;const 
 const parseJson = async req => {if(Number(req.headers.get('content-length')||0)>40000)throw Error('too_large');return await req.json()};
 const err = (code,message)=>JSON_RESPONSE({error:message},code);
 const validDb = env=>Boolean(env.DB);
+function validStoredPasswordHash(value){
+ if(typeof value!=='string')return false;
+ const fields=value.split(':');
+ if(fields.length!==2)return false;
+ try{return unb64(fields[0]).length===16 && unb64(fields[1]).length===32;}
+ catch{return false;}
+}
 async function api(req,env){
  const url=new URL(req.url),path=url.pathname,method=req.method;
- if(path==='/api/health')return JSON_RESPONSE({ok:true,db:validDb(env),configured:Boolean(env.ADMIN_PASSWORD_HASH&&env.SESSION_SECRET)});
+ if(path==='/api/health')return JSON_RESPONSE({ok:true,db:validDb(env),configured:Boolean(env.ADMIN_USER&&validStoredPasswordHash(env.ADMIN_PASSWORD_HASH)&&env.SESSION_SECRET)});
  if(!validDb(env))return err(503,'قاعدة البيانات غير مرتبطة بالموقع');
  if(path==='/api/items'&&method==='GET'){
   const type=url.searchParams.get('type');if(type&&!kinds.has(type))return err(400,'تصنيف غير صحيح');
