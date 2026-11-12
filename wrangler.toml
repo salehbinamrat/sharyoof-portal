@@ -1,4 +1,6 @@
 name = "sharyoof"
+# Preserve production secrets configured in the Cloudflare runtime dashboard.
+keep_vars = true
 main = "src/worker.js"
 compatibility_date = "2026-10-01"
 workers_dev = true
