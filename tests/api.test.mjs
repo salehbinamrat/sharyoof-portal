@@ -45,3 +45,15 @@ test('Payload guard and non-existing records',async()=>{
  assert.equal((await call(e,'/api/admin/items/nothing','DELETE',undefined,cookie)).status,404);
  assert.equal((await call(e,'/api/admin/upload','POST',undefined,cookie)).status,503);
 });
+
+test('Health marks missing or malformed admin credentials as unconfigured',async()=>{
+ const e=env();
+ assert.equal((await (await call(e,'/api/health')).json()).configured,true);
+ e.ADMIN_PASSWORD_HASH='a-key-that-is-not-a-password-hash';
+ assert.equal((await (await call(e,'/api/health')).json()).configured,false);
+ e.ADMIN_PASSWORD_HASH='not-base64:also-not-base64';
+ assert.equal((await (await call(e,'/api/health')).json()).configured,false);
+ e.ADMIN_PASSWORD_HASH=stored;
+ delete e.ADMIN_USER;
+ assert.equal((await (await call(e,'/api/health')).json()).configured,false);
+});
