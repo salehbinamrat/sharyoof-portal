@@ -34,3 +34,14 @@ npx wrangler dev
 
 ## حدود النسخة
 هذه نسخة أولية جاهزة للمصدر والاختبار؛ يحتاج تشغيلها على الإنترنت إلى ربط حساب Cloudflare وD1 والأسرار. جميع أقسام المحتوى فارغة حتى ينشر المدير عناصر حقيقية. لوحة التحكم `/#admin` تتطلب اعتماداً من الخادم، ولا يوجد اسم مستخدم/كلمة مرور افتراضيان.
+
+## تشخيص دخول الإدارة والنشر
+
+- عند إعادة تعيين كلمة مرور الإدارة شغّل `npm run admin:hash`. ضع **القيمة فقط** بعد علامة `=` في سر `ADMIN_PASSWORD_HASH` داخل **Worker → Settings → Runtime variables and secrets → Production**. لا تنسخ اسم المفتاح أو علامة المساواة داخل السر.
+- لا تخلط بين أسرار **Builds** وأسرار **Runtime**. الأولى لا تصل إلى طلبات تسجيل الدخول على Worker.
+- `GET /api/health` يعيد `configured:true` عندما يتوفر `ADMIN_USER` و`SESSION_SECRET` وتكون صيغة `ADMIN_PASSWORD_HASH` صحيحة (ملح 16 بايت وتجزئة 32 بايت). هذه النتيجة لا تثبت تطابق كلمة المرور التي تُدخلها.
+- بعد خمس محاولات فاشلة يمنع تسجيل الدخول مؤقتا لمدة 15 دقيقة. لا تعاود التجربة خلال الحظر.
+- `keep_vars = true` في `wrangler.toml` يحافظ على المتغيرات المخزنة في لوحة Cloudflare عند نشر الكود من Wrangler.
+- نشر GitHub Actions يتطلب إضافة `CLOUDFLARE_API_TOKEN` و`CLOUDFLARE_ACCOUNT_ID` إلى **GitHub → Settings → Secrets and variables → Actions**. رمز **Cloudflare Builds** لا يُنسخ تلقائيا إلى GitHub Secrets.
+- لا ترفع كلمة المرور أو التجزئة أو رمز Cloudflare أو مفتاح الجلسة إلى GitHub. بعد نجاح تسجيل الدخول يجب تغيير بيانات الدخول التي سبق نشرها في محادثات أو صور.
+- اضبط أمر بناء Cloudflare Workers Builds لتنفيذ `npm run check && npm test` قبل `npx wrangler deploy`، ولا تعتمد نشر إنتاج مستقلين متزامنين من GitHub Actions وCloudflare Builds دون تنسيق.
