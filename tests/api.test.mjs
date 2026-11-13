@@ -57,3 +57,13 @@ test('Health marks missing or malformed admin credentials as unconfigured',async
  delete e.ADMIN_USER;
  assert.equal((await (await call(e,'/api/health')).json()).configured,false);
 });
+test('Reject malformed credentials before consuming failed login attempts',async()=>{
+ const e=env();
+ e.ADMIN_PASSWORD_HASH='invalid-hash';
+ const response=await call(e,'/api/login','POST',{username:'admin',password:'wrong'});
+ assert.equal(response.status,503);
+ assert.match((await response.json()).error,/رمز كلمة المرور غير صالح/);
+ e.ADMIN_PASSWORD_HASH=stored;
+ const valid=await call(e,'/api/login','POST',{username:'admin',password});
+ assert.equal(valid.status,200);
+});
