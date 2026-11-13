@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 
 const wrangler = readFileSync(new URL('../wrangler.toml', import.meta.url),'utf8');
 
-test('Deploys preserve dashboard-configured runtime secrets',()=>{
+test('Deploys preserve dashboard-configured runtime variables',()=>{
  assert.match(wrangler, /^keep_vars\s*=\s*true\s*$/m);
 });
 test('Automated deploy explains missing Cloudflare Actions secrets',()=>{
