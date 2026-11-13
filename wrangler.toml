@@ -1,5 +1,5 @@
 name = "sharyoof"
-# Preserve production secrets configured in the Cloudflare runtime dashboard.
+# Keep dashboard-defined runtime variables during deploy; secrets are preserved by Wrangler independently.
 keep_vars = true
 main = "src/worker.js"
 compatibility_date = "2026-10-01"
