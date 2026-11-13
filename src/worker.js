@@ -56,7 +56,7 @@ async function api(req,env){
  }
  if(path==='/api/settings'&&method==='GET')return JSON_RESPONSE({settings:JSON.parse((await env.DB.prepare('SELECT data FROM site_settings WHERE id=1').first())?.data||'{}')});
  if(path==='/api/login'&&method==='POST'){
-  if(!env.ADMIN_PASSWORD_HASH||!env.SESSION_SECRET)return err(503,'لم تكتمل إعدادات الدخول الآمن');
+  if(!env.ADMIN_USER||!validStoredPasswordHash(env.ADMIN_PASSWORD_HASH)||!env.SESSION_SECRET)return err(503,'إعدادات تسجيل الدخول غير مكتملة أو رمز كلمة المرور غير صالح');
   const ip=(req.headers.get('cf-connecting-ip')||'unknown').slice(0,60);
   const now=Math.floor(Date.now()/1000);const stored=await env.DB.prepare('SELECT failures,window_start FROM login_attempts WHERE ip=?').bind(ip).first();
   if(stored&&now-stored.window_start<900&&stored.failures>=5)return err(429,'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة');
